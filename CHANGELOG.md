@@ -22,9 +22,10 @@ but cannot always guarantee backwards compatibility. Changes that may **break co
 - Improvements to `RegressionEnsembleModel` : [#3041](https://github.com/unit8co/darts/pull/3041) by [Gabriel Margaria](https://github.com/Jaco-Pastorius) and [#3074](https://github.com/unit8co/darts/pull/3074) by [Junghwan Na](https://github.com/shaun0927).
   - Base forecasting models using `output_chunk_shift>0` are now fully supported. If you're using a custom `regression_model`, simply set its output shift to be the same as that of the base models.
   - Added support for `output_chunk_length>1` for the ensemble (regression) model. This means that the ensemble model can now consume information from base model forecasts over the entire horizon.
-- Scaled metrics (`ase`, `sse`, `mase`, `msse`, `rmsse`) no longer raise a hard `ValueError` when the `insample` series has zero error scale (constant or perfectly seasonal signals). A new `zero_division` parameter controls the behavior: [#3059](https://github.com/unit8co/darts/pull/3059) by [Mahima Sharma](https://github.com/mahi-ma)
+- 🔴 Scaled metrics (`ase`, `sse`, `mase`, `msse`, `rmsse`) no longer raise a hard `ValueError` when the `insample` series has zero error scale (constant or perfectly seasonal signals). A new `zero_division` parameter controls the behavior: [#3059](https://github.com/unit8co/darts/pull/3059) by [Mahima Sharma](https://github.com/mahi-ma)
   - `"warn"` (default) raises a warning and returns `np.nan` for non-zero forecast errors, and `1.0` otherwise (forecast is on-par with naive forecast).
   - `"raise"` preserves the legacy error.
+- 🔴 We moved `NaiveEnsembleModel` from `darts.models.forecasting.baselines` into a dedicated module `darts.models.forecasting.naive_ensemble_model` to separate the heavier dependencies from the baseline models and improve import times. Models that were saved in older Darts versions (pickled) cannot be loaded anymore. To fix it, simply re-create the model and store it again. [#3066](https://github.com/unit8co/darts/pull/3066) by [Dennis Bader](https://github.com/dennisbader)
 
 **Fixed**
 
@@ -33,7 +34,6 @@ but cannot always guarantee backwards compatibility. Changes that may **break co
   - Fixed an issue where using the OHE parameter `drop` (e.g. `drop="first"`, `drop="if_binary"`) raised an exception due to wrong internal column mapping. [#3065](https://github.com/unit8co/darts/pull/3065) by [Jay Dasondee](https://github.com/JKDasondee)
   - Fixed an issue where using the OHE parameters `min_frequency` or `max_categories` silently truncated the column mapping. [#3076](https://github.com/unit8co/darts/pull/3076) by [Junghwan Na](https://github.com/shaun0927).
 - Fixed a stale docstring in `Diff` that incorrectly stated a `component_mask` cannot be specified together with `dropna=True`. [#3078](https://github.com/unit8co/darts/pull/3078) by [Junghwan Na](https://github.com/shaun0927).
-
 
 ### For developers of the library:
 
