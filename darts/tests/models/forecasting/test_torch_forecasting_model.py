@@ -1350,6 +1350,36 @@ class TestTorchForecastingModel:
         loading_model.fit(ts_float32)
         assert loading_model.model._dtype == torch.float32  # type: ignore
 
+    def test_verify_dtypes_after_loading(self, tmpdir_fn, caplog):
+        """Check that dtype warnings work also with loaded models"""
+        model = DLinearModel(
+            input_chunk_length=4,
+            output_chunk_length=1,
+            n_epochs=1,
+            save_checkpoints=True,
+            force_reset=True,
+            model_name="test_model",
+            work_dir=tmpdir_fn,
+            **tfm_kwargs,
+        )
+        series = self.series.astype("float32")
+        model.fit(series, val_series=series)
+        model_loaded = model.load_from_checkpoint(
+            model_name=model.model_name,
+            work_dir=tmpdir_fn,
+        )
+
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            _ = model_loaded.predict(n=1)
+        assert "different data type" not in caplog.text
+
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            with pytest.raises(Exception):
+                _ = model_loaded.predict(n=1, series=self.series.astype("float64"))
+        assert "different data type" in caplog.text
+
     def test_multi_steps_pipeline(self, tmpdir_fn):
         ts_training, ts_val = self.series.split_before(75)
         pretrain_model_name = "pre-train"
