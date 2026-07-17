@@ -1709,7 +1709,7 @@ class TimeSeries:
     @property
     def duration(self) -> pd.Timedelta | int:
         """The duration of the series (as a ``pandas.Timedelta`` or `int`)."""
-        return self._time_index[-1] - self._time_index[0]
+        return self.end_time() - self.start_time()
 
     """
     Export functions
@@ -1980,7 +1980,12 @@ class TimeSeries:
             A timestamp containing the first time of the TimeSeries (if indexed by DatetimeIndex),
             or an integer (if indexed by RangeIndex)
         """
-        return self._time_index[0]
+        # index[0] is relatively expensive (esp. for DatetimeIndex); cache on first access.
+        start_time = getattr(self, "_start_time", None)
+        if start_time is None:
+            start_time = self._time_index[0]
+            self._start_time = start_time
+        return start_time
 
     def end_time(self) -> pd.Timestamp | int:
         """End time of the series.
@@ -1991,7 +1996,12 @@ class TimeSeries:
             A timestamp containing the last time of the TimeSeries (if indexed by DatetimeIndex),
             or an integer (if indexed by RangeIndex)
         """
-        return self._time_index[-1]
+        # index[-1] is relatively expensive (esp. for DatetimeIndex); cache on first access.
+        end_time = getattr(self, "_end_time", None)
+        if end_time is None:
+            end_time = self._time_index[-1]
+            self._end_time = end_time
+        return end_time
 
     def first_value(self) -> float:
         """First value of the univariate series.
@@ -2933,11 +2943,11 @@ class TimeSeries:
             n = int(n)
 
         try:
-            self._time_index[-1] + n * self.freq
+            self.end_time() + n * self.freq
         except pd.errors.OutOfBoundsDatetime:
             raise_log(
                 OverflowError(
-                    f"the add operation between {n * self.freq} and {self.time_index[-1]} will "
+                    f"the add operation between {n * self.freq} and {self.end_time()} will "
                     "overflow"
                 ),
             )
@@ -3759,7 +3769,7 @@ class TimeSeries:
         bool
             Whether `ts` is contained within the interval of this series.
         """
-        return self.time_index[0] <= ts <= self.time_index[-1]
+        return self.start_time() <= ts <= self.end_time()
 
     def map(
         self,
