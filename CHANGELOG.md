@@ -15,6 +15,8 @@ but cannot always guarantee backwards compatibility. Changes that may **break co
 
 **Dependencies**
 
+- Fixed uv resolution issues on macOS due to numba and llmvlite having dropped macOS x86_64 wheels. [#3168](https://github.com/unit8co/darts/pull/3168) by [Dennis Bader](https://github.com/dennisbader).
+
 ### For developers of the library:
 
 ## [0.46.0](https://github.com/unit8co/darts/tree/0.46.0) (2026-07-17)
